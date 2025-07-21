@@ -1,4 +1,5 @@
 import GoBackButton from './components/GoBackButton';
+import Link from 'next/link';
 
 export default function NotFound() {
   return (
@@ -26,16 +27,16 @@ export default function NotFound() {
           </h2>
 
           <p className="text-gray-600 mb-6">
-            The profile you're looking for doesn't exist or the UUID is invalid.
+            The profile you&apos;re looking for doesn&apos;t exist or the UUID is invalid.
           </p>
 
           <div className="space-y-3">
-            <a
+            <Link
               href="/"
               className="inline-block w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
             >
               Go to Homepage
-            </a>
+            </Link>
 
             <GoBackButton className="inline-block w-full bg-gray-100 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-200 transition-colors">
               Go Back

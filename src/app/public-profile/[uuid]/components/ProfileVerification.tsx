@@ -2,6 +2,9 @@
 
 import { useState, useRef } from 'react';
 import ReCAPTCHA from 'react-google-recaptcha';
+import { ProfileData } from '@/types/api';
+import { verifyProfileAction } from '@/actions/profile';
+import { formatBirthdayForApi } from '@/utils/profile';
 
 interface VerificationForm {
   fullName: string;
@@ -12,13 +15,14 @@ interface VerificationForm {
 }
 
 interface ProfileVerificationProps {
-  profile: any;
-  onVerificationSuccess: () => void;
+  profile: ProfileData;
+  uuid: string;
+  onVerificationSuccess: (verifiedProfile: ProfileData) => void;
 }
 
-export default function ProfileVerification({ profile, onVerificationSuccess }: ProfileVerificationProps) {
+export default function ProfileVerification({ profile, uuid, onVerificationSuccess }: ProfileVerificationProps) {
   const [verificationForm, setVerificationForm] = useState<VerificationForm>({
-    fullName: profile.fullName || 'Nguyễn Văn An',
+    fullName: profile.fullName || '',
     gender: '',
     dateOfBirth: '',
     idNumber: '',
@@ -68,28 +72,38 @@ export default function ProfileVerification({ profile, onVerificationSuccess }: 
       return;
     }
 
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+      // Call server action for verification
+      const result = await verifyProfileAction(
+        uuid,
+        {
+          gender: verificationForm.gender as "male" | "female",
+          id_number: verificationForm.idNumber,
+          phone_number: verificationForm.phoneNumber,
+          birthday: formatBirthdayForApi(verificationForm.dateOfBirth),
+        },
+        captchaToken
+      );
 
-    // TODO: Replace with actual API call that includes captcha verification
-    // const isValid = await verifyUserInfo(uuid, verificationForm, captchaToken);
-
-    // Temporary mock verification - allow if name matches profile name
-    const isValid = verificationForm.fullName === profile.fullName ||
-                   verificationForm.fullName === 'Nguyễn Văn An';
-
-    if (isValid) {
-      onVerificationSuccess();
-    } else {
-      setVerificationError('Thông tin không chính xác. Vui lòng kiểm tra lại hoặc liên hệ với quản trị viên');
+      if (result.success && result.profile) {
+        onVerificationSuccess(result.profile);
+      } else {
+        setVerificationError(result.error || 'Thông tin không chính xác. Vui lòng kiểm tra lại.');
+        // Reset reCAPTCHA on error
+        if (recaptchaRef.current) {
+          recaptchaRef.current.reset();
+          setCaptchaToken(null);
+        }
+      }
+    } catch (error) {
+      console.error('Verification error:', error);
+      setVerificationError('Có lỗi xảy ra trong quá trình xác thực. Vui lòng thử lại.');
       // Reset reCAPTCHA on error
       if (recaptchaRef.current) {
         recaptchaRef.current.reset();
         setCaptchaToken(null);
       }
-    }
-
-    setIsLoading(false);
+    }    setIsLoading(false);
   };
 
   return (
@@ -148,9 +162,8 @@ export default function ProfileVerification({ profile, onVerificationSuccess }: 
                   }}
                 >
                   <option value="">Chọn giới tính</option>
-                  <option value="Nam">Nam</option>
-                  <option value="Nữ">Nữ</option>
-                  <option value="Khác">Khác</option>
+                  <option value="male">Nam</option>
+                  <option value="female">Nữ</option>
                 </select>
               </div>
 

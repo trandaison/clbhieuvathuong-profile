@@ -1,30 +1,35 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { notFound } from 'next/navigation';
+import { useState } from 'react';
 import ProfileVerification from './ProfileVerification';
 import ProfileDisplay from './ProfileDisplay';
+import { ProfileData } from '@/types/api';
 
 interface ProfileWrapperProps {
   uuid: string;
-  profile: any;
+  profile: ProfileData;
+  isPartial: boolean;
 }
 
-export default function ProfileWrapper({ uuid, profile }: ProfileWrapperProps) {
-  const [isVerified, setIsVerified] = useState(false);
+export default function ProfileWrapper({ uuid, profile, isPartial }: ProfileWrapperProps) {
+  const [isVerified, setIsVerified] = useState(!isPartial);
+  const [fullProfile, setFullProfile] = useState<ProfileData>(profile);
 
-  const handleVerificationSuccess = () => {
+  const handleVerificationSuccess = (verifiedProfile: ProfileData) => {
+    setFullProfile(verifiedProfile);
     setIsVerified(true);
   };
 
-  if (!isVerified) {
+  // If we only have partial data (name + avatar), show verification form
+  if (!isVerified && isPartial) {
     return (
       <ProfileVerification
         profile={profile}
+        uuid={uuid}
         onVerificationSuccess={handleVerificationSuccess}
       />
     );
   }
 
-  return <ProfileDisplay profile={profile} />;
+  return <ProfileDisplay profile={fullProfile} />;
 }

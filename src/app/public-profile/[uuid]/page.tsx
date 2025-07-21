@@ -1,5 +1,7 @@
 import { notFound } from 'next/navigation';
 import ProfileWrapper from './components/ProfileWrapper';
+import { fetchPublicProfileAction } from '@/actions/profile';
+import { convertApiToProfileData } from '@/utils/profile';
 
 interface PublicProfilePageProps {
   params: Promise<{
@@ -7,82 +9,26 @@ interface PublicProfilePageProps {
   }>;
 }
 
-// Mock data for demonstration
-const mockProfileData = {
-  avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face&auto=format",
-  fullName: "Nguyễn Văn An",
-  dateOfBirth: "1990-05-15",
-  email: "nguyenvanan@email.com",
-  gender: "Nam",
-  bloodType: "O+",
-  donationHistory: [
-    {
-      date: "2024-01-15",
-      location: "Bệnh viện Chợ Rẫy",
-      plateletCount: 250,
-      donationType: "Hiến toàn phần"
-    },
-    {
-      date: "2023-11-20",
-      location: "Trung tâm Hiến máu TP.HCM",
-      plateletCount: 280,
-      donationType: "Hiến tiểu cầu"
-    },
-    {
-      date: "2023-09-10",
-      location: "Bệnh viện Bình Dân",
-      plateletCount: 265,
-      donationType: "Hiến toàn phần"
-    },
-    {
-      date: "2023-06-05",
-      location: "Trung tâm Hiến máu TP.HCM",
-      plateletCount: 275,
-      donationType: "Hiến tiểu cầu"
-    },
-    {
-      date: "2023-03-12",
-      location: "Bệnh viện Chợ Rẫy",
-      plateletCount: 260,
-      donationType: "Hiến toàn phần"
-    }
-  ],
-  ranking: {
-    currentRank: 15,
-    totalDonations: 5,
-    totalDonors: 1250,
-    sameBloodTypeCount: 180 // Số người cùng nhóm máu O+
-  },
-  topDonors: [
-    { name: "Trần Thị Bình", donations: 28, bloodType: "A+" },
-    { name: "Lê Văn Cường", donations: 25, bloodType: "B-" },
-    { name: "Phạm Thị Dung", donations: 23, bloodType: "AB+" },
-    { name: "Hoàng Văn Em", donations: 22, bloodType: "O-" },
-    { name: "Nguyễn Thị Phương", donations: 21, bloodType: "A-" }
-  ]
-};
-
 export default async function PublicProfilePage({
   params
 }: PublicProfilePageProps) {
   const { uuid } = await params;
 
-  // Validate UUID format (basic validation)
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-  if (!uuidRegex.test(uuid)) {
+  if (!uuid.trim()) {
     notFound();
   }
 
-  // TODO: Fetch user profile data based on UUID
-  // const profile = await fetchUserProfile(uuid);
-  // if (!profile) {
-  //   notFound();
-  // }
+  // Fetch user profile data based on UUID (without verification data initially)
+  const result = await fetchPublicProfileAction(uuid);
 
-  const profile = mockProfileData;
+  if (!result) {
+    notFound();
+  }
 
-  return <ProfileWrapper uuid={uuid} profile={profile} />;
+  const { profile: apiProfile, isPartial } = result;
+  const profile = convertApiToProfileData(apiProfile);
+
+  return <ProfileWrapper uuid={uuid} profile={profile} isPartial={isPartial} />;
 }
 
 // Generate metadata dynamically based on the UUID
@@ -91,18 +37,28 @@ export async function generateMetadata({
 }: PublicProfilePageProps) {
   const { uuid } = await params;
 
-  // TODO: In real implementation, fetch user data to get actual name
-  // const profile = await fetchUserProfile(uuid);
-  // const userName = profile?.fullName || 'Người hiến máu';
+  // Fetch profile data for metadata
+  const result = await fetchPublicProfileAction(uuid);  if (!result) {
+    return {
+      title: 'Hồ sơ không tìm thấy',
+      description: 'Hồ sơ hiến máu không tồn tại hoặc đã bị xóa.',
+    };
+  }
+
+  const { profile: apiProfile } = result;
+  const userName = apiProfile.name || 'Người hiến máu';
+  const bloodType = apiProfile.blood_type ?
+    apiProfile.blood_type.replace('_pos', '+').replace('_neg', '-').toUpperCase() : '';
 
   return {
-    title: `Hồ sơ hiến máu - ${mockProfileData.fullName}`,
-    description: `Xem hồ sơ hiến máu và lịch sử đóng góp của ${mockProfileData.fullName}. Nhóm máu ${mockProfileData.bloodType}, đã hiến ${mockProfileData.ranking.totalDonations} lần.`,
-    keywords: ['hiến máu', 'hồ sơ hiến máu', 'lịch sử hiến máu', mockProfileData.bloodType],
+    title: `Hồ sơ hiến máu - ${userName}`,
+    description: `Xem hồ sơ hiến máu và lịch sử đóng góp của ${userName}${bloodType ? `. Nhóm máu ${bloodType}` : ''}.`,
+    keywords: ['hiến máu', 'hồ sơ hiến máu', 'lịch sử hiến máu', bloodType].filter(Boolean),
     openGraph: {
-      title: `Hồ sơ hiến máu - ${mockProfileData.fullName}`,
-      description: `Xem hồ sơ và lịch sử hiến máu của ${mockProfileData.fullName}`,
+      title: `Hồ sơ hiến máu - ${userName}`,
+      description: `Xem hồ sơ và lịch sử hiến máu của ${userName}`,
       type: 'profile',
+      images: apiProfile.avatar?.medium?.url ? [apiProfile.avatar.medium.url] : undefined,
     },
   };
 }

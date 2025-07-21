@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { ProfileData } from '@/types/api';
 
 interface ProfileDisplayProps {
-  profile: any;
+  profile: ProfileData;
 }
 
 export default function ProfileDisplay({ profile }: ProfileDisplayProps) {
@@ -111,7 +111,7 @@ export default function ProfileDisplay({ profile }: ProfileDisplayProps) {
                 <div className="absolute left-16 top-0 bottom-0 w-8 bg-gradient-to-r from-red-50 to-transparent rounded-lg opacity-30"></div>
 
                 <div className="space-y-8">
-                  {profile.donationHistory.map((donation: any, index: number) => (
+                  {profile.donationHistory.map((donation, index: number) => (
                     <div key={index} className="relative group">
                       {/* Date display on left side */}
                       <div className="absolute left-0 top-2 flex flex-col items-center w-16">
@@ -258,7 +258,7 @@ export default function ProfileDisplay({ profile }: ProfileDisplayProps) {
                 Top 5 người hiến máu
               </h3>
               <div className="space-y-3">
-                {profile.topDonors.map((donor: any, index: number) => (
+                {profile.topDonors.map((donor, index: number) => (
                   <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <div className="flex items-center space-x-3">
                       <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${

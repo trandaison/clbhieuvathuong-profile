@@ -4,6 +4,26 @@
 ✅ reCAPTCHA v2 đã được tích hợp vào form xác thực
 ✅ Sử dụng test keys để development
 ✅ API endpoint `/api/verify-profile` đã sẵn sàng
+✅ **NEW:** Tích hợp API thực tế cho public profiles
+
+## API Integration
+### Public Profile API
+- **Endpoint:** `GET /api/public_profiles/{uuid}`
+- **Partial Data:** Chỉ trả về `name` và `avatar` (status 206)
+- **Full Data:** Trả về tất cả thông tin khi có verification query params (status 200)
+- **Query Parameters cho verification:**
+  - `gender`: "male" | "female"
+  - `id_number`: Số CMND/CCCD
+  - `phone_number`: Số điện thoại
+  - `birthday`: Ngày sinh (format DD/MM/YYYY)
+
+### Environment Variables
+```bash
+# .env.local
+NEXT_PUBLIC_API_BASE_URL=http://localhost:3000
+NEXT_PUBLIC_RECAPTCHA_SITE_KEY=6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI
+RECAPTCHA_SECRET_KEY=6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe
+```
 
 ## Development Keys (Hiện tại)
 - Site Key: `6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI` (Google test key)
