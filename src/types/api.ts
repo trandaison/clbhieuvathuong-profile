@@ -84,6 +84,7 @@ export interface ProfileData {
   bloodType: string;
   address?: string;
   phoneNumber?: string;
+  idNumber?: string;
   facebookAccount?: string;
   placeOfBirth?: string;
   donationHistory: DonationRecord[];

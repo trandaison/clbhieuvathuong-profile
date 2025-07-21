@@ -14,19 +14,30 @@ interface VerificationForm {
   phoneNumber: string;
 }
 
+interface CachedVerificationData {
+  uuid: string;
+  fullName: string;
+  gender: 'male' | 'female';
+  dateOfBirth: string;
+  idNumber: string;
+  phoneNumber: string;
+  timestamp: number;
+}
+
 interface ProfileVerificationProps {
   profile: ProfileData;
   uuid: string;
-  onVerificationSuccess: (verifiedProfile: ProfileData) => void;
+  onVerificationSuccess: (verifiedProfile: ProfileData, verificationData: VerificationForm) => void;
+  cachedData?: CachedVerificationData | null;
 }
 
-export default function ProfileVerification({ profile, uuid, onVerificationSuccess }: ProfileVerificationProps) {
+export default function ProfileVerification({ profile, uuid, onVerificationSuccess, cachedData }: ProfileVerificationProps) {
   const [verificationForm, setVerificationForm] = useState<VerificationForm>({
-    fullName: profile.fullName || '',
-    gender: '',
-    dateOfBirth: '',
-    idNumber: '',
-    phoneNumber: ''
+    fullName: cachedData?.fullName || profile.fullName || '',
+    gender: cachedData?.gender || '',
+    dateOfBirth: cachedData?.dateOfBirth || '',
+    idNumber: cachedData?.idNumber || '',
+    phoneNumber: cachedData?.phoneNumber || ''
   });
   const [verificationError, setVerificationError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -86,7 +97,7 @@ export default function ProfileVerification({ profile, uuid, onVerificationSucce
       );
 
       if (result.success && result.profile) {
-        onVerificationSuccess(result.profile);
+        onVerificationSuccess(result.profile, verificationForm);
       } else {
         setVerificationError(result.error || 'Thông tin không chính xác. Vui lòng kiểm tra lại.');
         // Reset reCAPTCHA on error
@@ -139,7 +150,7 @@ export default function ProfileVerification({ profile, uuid, onVerificationSucce
                 type="text"
                 value={verificationForm.fullName}
                 readOnly
-                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-900 cursor-not-allowed"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-900 cursor-not-allowed"
                 placeholder="Nhập họ và tên"
               />
             </div>

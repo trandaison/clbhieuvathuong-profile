@@ -84,6 +84,7 @@ export function convertApiToProfileData(apiData: PublicProfileResponse): Profile
     bloodType: apiData.blood_type ? bloodTypeMap[apiData.blood_type] || apiData.blood_type : '',
     address: apiData.address,
     phoneNumber: apiData.phone_number,
+    idNumber: apiData.id_number,
     facebookAccount: apiData.facebook_account,
     placeOfBirth: apiData.place_of_birth,
     donationHistory,
