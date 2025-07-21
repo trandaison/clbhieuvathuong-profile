@@ -1,6 +1,7 @@
 'use client';
 
 import { ProfileData } from '@/types/api';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface ProfileDisplayProps {
   profile: ProfileData;
@@ -39,6 +40,19 @@ export default function ProfileDisplay({ profile }: ProfileDisplayProps) {
       </svg>
     );
   };
+
+  // Prepare data for platelet chart
+  const plateletChartData = profile.donationHistory
+    .map(donation => {
+      const date = new Date(donation.date);
+      return {
+        date: `${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear().toString().slice(-2)}`,
+        plateletCount: donation.plateletCount,
+        fullDate: donation.date,
+        displayDate: new Date(donation.date).toLocaleDateString('vi-VN')
+      };
+    })
+    .sort((a, b) => new Date(a.fullDate).getTime() - new Date(b.fullDate).getTime());
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -248,6 +262,68 @@ export default function ProfileDisplay({ profile }: ProfileDisplayProps) {
                 </div>
               </div>
             </div>
+
+            {/* Platelet Chart - Only show if 2+ donations */}
+            {profile.ranking.totalDonations >= 2 && (
+              <div className="bg-white shadow rounded-lg p-6">
+                <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                  <svg className="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                  Biểu đồ chỉ số tiểu cầu
+                </h3>
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart
+                      data={plateletChartData}
+                      margin={{
+                        top: 5,
+                        left: -30,
+                        bottom: -5,
+                      }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                      <XAxis
+                        dataKey="date"
+                        tick={{ fontSize: 12 }}
+                      />
+                      <YAxis
+                        tick={{ fontSize: 12 }}
+                        domain={['dataMin - 10', 'dataMax + 10']}
+                      />
+                      <Tooltip
+                        formatter={(value) => [`${value} (x10³/μL)`, 'Chỉ số tiểu cầu']}
+                        labelFormatter={(label, payload) => {
+                          if (payload && payload.length > 0) {
+                            return `Thời gian: ${payload[0].payload.displayDate}`;
+                          }
+                          return `Thời gian: ${label}`;
+                        }}
+                        contentStyle={{
+                          backgroundColor: 'white',
+                          border: '1px solid #e5e7eb',
+                          borderRadius: '8px',
+                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                          color: '#374151',
+                          fontWeight: '500'
+                        }}
+                        labelStyle={{
+                          color: '#1f2937',
+                          fontWeight: '600'
+                        }}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="plateletCount"
+                        stroke="#3b82f6"
+                        strokeWidth={2}
+                        dot={false}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            )}
 
             {/* Top Donors */}
             <div className="bg-white shadow rounded-lg p-6">
