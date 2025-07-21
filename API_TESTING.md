@@ -7,6 +7,7 @@
 - **Backend Integration**: Server Actions (no CORS issues)
 - **API**: External API on localhost:8000
 - **Security**: Google reCAPTCHA v2 + server-side verification
+- **Data Integration**: Full API integration with real donation histories, statistics, and top donors
 
 ### 1. Test với UUID hợp lệ
 
@@ -16,7 +17,12 @@ Thử truy cập: `http://localhost:3000/public-profile/2vjAQjqy` (hoặc UUID c
 - Hiển thị form verification với name và avatar từ API (partial data)
 - User điền thông tin verification
 - Server action gọi API với verification data
-- Sau khi verification thành công → hiển thị full profile
+- Sau khi verification thành công → hiển thị full profile với:
+  * **Real donation histories** từ API field `histories[]` với place names
+  * **Real statistics** từ API field `statistics` (current_rank, total_donations, etc.)
+  * **Real top donors** từ API field `statistics.top_donors[]` với ngày hiến máu gần nhất
+  * **Smart type mapping**: `platelets` → "Hiến tiểu cầu", auto blood type conversion
+  * **Graceful fallbacks**: Mock data nếu API fields không có
 
 ### 2. Test với UUID không tồn tại
 
@@ -36,6 +42,16 @@ Thử truy cập: `http://localhost:3000/public-profile/invalid-uuid`
 Client Component → Server Action → API localhost:8000
 (No CORS issues because server-to-server call)
 ```
+
+#### New API Fields Integrated:
+- **histories[]**: Real donation records với dates, places, donation_type, platelet_count
+- **statistics**: current_rank, total_donations, total_donors_count, same_blood_type_count
+- **statistics.top_donors[]**: Real top donors với donation_count, blood_type, last_donation_date
+- **Smart mapping**:
+  - `donation_type: "platelets"` → "Hiến tiểu cầu"
+  - `blood_type: "o_pos"` → "O+"
+  - `place.name` → Location display
+- **Note**: `top_donors.rank` không được sử dụng vì không chính xác (thay bằng array index + 1)
 
 ### 4. Test reCAPTCHA Integration
 

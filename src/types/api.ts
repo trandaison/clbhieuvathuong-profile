@@ -12,6 +12,38 @@ export interface AvatarUrls {
   };
 }
 
+export interface ApiPlace {
+  id: number;
+  name: string;
+  address: string;
+  is_hospital: boolean;
+}
+
+export interface ApiDonationHistory {
+  id: number;
+  date: string;
+  donation_type: string;
+  platelet_count: number;
+  is_verified: boolean;
+  place: ApiPlace;
+}
+
+export interface ApiTopDonor {
+  rank: number; // Note: không sử dụng vì không chính xác
+  name: string;
+  blood_type: string;
+  donation_count: number;
+  last_donation_date: string;
+}
+
+export interface ApiStatistics {
+  same_blood_type_count: number;
+  total_donors_count: number;
+  total_donations: number;
+  current_rank: number;
+  top_donors: ApiTopDonor[];
+}
+
 export interface PublicProfileResponse {
   id: number;
   email?: string;
@@ -28,6 +60,10 @@ export interface PublicProfileResponse {
   place_of_birth?: string;
   created_at?: string;
   updated_at?: string;
+
+  // New API fields from actual response
+  histories?: ApiDonationHistory[];
+  statistics?: ApiStatistics;
 }
 
 export interface VerificationRequest {
@@ -71,4 +107,5 @@ export interface TopDonor {
   name: string;
   donations: number;
   bloodType: string;
+  lastDonationDate?: string;
 }

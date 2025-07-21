@@ -100,7 +100,7 @@ export default function ProfileDisplay({ profile }: ProfileDisplayProps) {
                 <svg className="w-6 h-6 mr-2 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                Lịch sử hiến máu
+                Nhật ký hiến máu
               </h2>
 
               <div className="relative">
@@ -129,7 +129,7 @@ export default function ProfileDisplay({ profile }: ProfileDisplayProps) {
                       </div>
 
                       {/* Animated timeline node */}
-                      <div className="absolute left-[4.75rem] flex items-center justify-center top-6">
+                      <div className="absolute left-[4.375rem] flex items-center justify-center top-6">
                         <div className="relative">
                           {/* Outer ring with pulse animation */}
                           <div className="w-6 h-6 bg-red-600 rounded-full animate-pulse shadow-lg"></div>
@@ -203,7 +203,7 @@ export default function ProfileDisplay({ profile }: ProfileDisplayProps) {
                 <svg className="w-5 h-5 mr-2 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                 </svg>
-                Thống kê cá nhân
+                Thống kê
               </h3>
               <div className="space-y-4">
                 <div className="text-center p-4 bg-gradient-to-br from-red-50 to-red-100 rounded-lg">
@@ -255,7 +255,7 @@ export default function ProfileDisplay({ profile }: ProfileDisplayProps) {
                 <svg className="w-5 h-5 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd"/>
                 </svg>
-                Top 5 người hiến máu
+                Top hiến máu nhiều nhất
               </h3>
               <div className="space-y-3">
                 {profile.topDonors.map((donor, index: number) => (
@@ -271,8 +271,15 @@ export default function ProfileDisplay({ profile }: ProfileDisplayProps) {
                       </div>
                       <div>
                         <div className="font-medium text-gray-900 text-sm">{donor.name}</div>
-                        <div className={`text-xs px-2 py-0.5 rounded ${getBloodTypeColor(donor.bloodType)}`}>
-                          {donor.bloodType}
+                        <div className="flex items-center space-x-2">
+                          <div className={`text-xs px-2 py-0.5 rounded ${getBloodTypeColor(donor.bloodType)}`}>
+                            {donor.bloodType}
+                          </div>
+                          {donor.lastDonationDate && (
+                            <div className="text-xs text-gray-500">
+                              Gần nhất: {new Date(donor.lastDonationDate).toLocaleDateString('vi-VN')}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>

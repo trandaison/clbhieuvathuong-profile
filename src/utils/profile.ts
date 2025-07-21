@@ -19,8 +19,14 @@ const genderMap: Record<string, string> = {
 };
 
 export function convertApiToProfileData(apiData: PublicProfileResponse): ProfileData {
-  // Mock data for features not provided by API
-  const mockDonationHistory = [
+  // Convert donation history from API or use mock data
+  const donationHistory = apiData.histories?.map(history => ({
+    date: history.date,
+    location: history.place.name,
+    plateletCount: history.platelet_count,
+    donationType: history.donation_type === 'platelets' ? 'Hiến tiểu cầu' : 'Hiến toàn phần'
+  })) || [
+    // Fallback mock data if API doesn't provide histories
     {
       date: "2024-01-15",
       location: "Bệnh viện Chợ Rẫy",
@@ -41,14 +47,27 @@ export function convertApiToProfileData(apiData: PublicProfileResponse): Profile
     }
   ];
 
-  const mockRanking = {
+  // Convert ranking/statistics from API or use mock data
+  const ranking = apiData.statistics ? {
+    currentRank: apiData.statistics.current_rank,
+    totalDonations: apiData.statistics.total_donations,
+    totalDonors: apiData.statistics.total_donors_count,
+    sameBloodTypeCount: apiData.statistics.same_blood_type_count
+  } : {
     currentRank: 15,
-    totalDonations: mockDonationHistory.length,
+    totalDonations: donationHistory.length,
     totalDonors: 1250,
     sameBloodTypeCount: 180
   };
 
-  const mockTopDonors = [
+  // Convert top donors from API or use mock data
+  const topDonors = apiData.statistics?.top_donors?.map((donor) => ({
+    name: donor.name.trim(), // Remove extra spaces
+    donations: donor.donation_count,
+    bloodType: donor.blood_type ? bloodTypeMap[donor.blood_type] || donor.blood_type : '',
+    lastDonationDate: donor.last_donation_date
+  })) || [
+    // Fallback mock data
     { name: "Trần Thị Bình", donations: 28, bloodType: "A+" },
     { name: "Lê Văn Cường", donations: 25, bloodType: "B-" },
     { name: "Phạm Thị Dung", donations: 23, bloodType: "AB+" },
@@ -67,9 +86,9 @@ export function convertApiToProfileData(apiData: PublicProfileResponse): Profile
     phoneNumber: apiData.phone_number,
     facebookAccount: apiData.facebook_account,
     placeOfBirth: apiData.place_of_birth,
-    donationHistory: mockDonationHistory,
-    ranking: mockRanking,
-    topDonors: mockTopDonors,
+    donationHistory,
+    ranking,
+    topDonors,
   };
 }
 
