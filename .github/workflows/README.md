@@ -14,7 +14,7 @@ Workflow này thực hiện deploy production manual theo yêu cầu.
    ```bash
    # Tạo SSH key mới
    ssh-keygen -t rsa -b 4096 -f ~/.ssh/deploy_key -C "github-actions-deploy"
-   
+
    # Hiển thị public key
    cat ~/.ssh/deploy_key.pub
    ```
@@ -23,7 +23,7 @@ Workflow này thực hiện deploy production manual theo yêu cầu.
    ```bash
    # Method 1: Sử dụng ssh-copy-id
    ssh-copy-id -i ~/.ssh/deploy_key.pub root@45.77.38.146
-   
+
    # Method 2: Manual copy
    ssh root@45.77.38.146
    mkdir -p ~/.ssh
@@ -116,7 +116,7 @@ ssh: handshake failed: ssh: unable to authenticate, attempted methods [none publ
    ```bash
    # Test SSH connection từ máy local
    ssh root@45.77.38.146
-   
+
    # Nếu được, copy private key
    cat ~/.ssh/id_rsa  # Copy toàn bộ nội dung
    ```
@@ -125,10 +125,10 @@ ssh: handshake failed: ssh: unable to authenticate, attempted methods [none publ
    ```bash
    # Tạo SSH key pair mới
    ssh-keygen -t rsa -b 4096 -C "deploy-key"
-   
+
    # Copy public key lên server
    ssh-copy-id root@45.77.38.146
-   
+
    # Hoặc manual copy
    cat ~/.ssh/id_rsa.pub
    # Paste vào server: /root/.ssh/authorized_keys
@@ -149,10 +149,10 @@ ssh: handshake failed: ssh: unable to authenticate, attempted methods [none publ
    ```bash
    # SSH vào server
    ssh root@45.77.38.146
-   
+
    # Kiểm tra authorized_keys
    cat ~/.ssh/authorized_keys
-   
+
    # Kiểm tra permissions
    chmod 700 ~/.ssh
    chmod 600 ~/.ssh/authorized_keys
@@ -198,7 +198,7 @@ curl http://45.77.38.146:3030/api/health
 - **Dùng khi**: Restart nhanh, fix memory issues
 
 ### `force_rebuild`
-- Pull latest code  
+- Pull latest code
 - Build Docker image hoàn toàn mới (no cache)
 - Deploy containers
 - **Thời gian**: ~5-7 phút

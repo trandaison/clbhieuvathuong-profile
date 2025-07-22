@@ -17,10 +17,10 @@ module.exports = {
       min_uptime: '10s',
       max_restarts: 10,
       max_memory_restart: '1G',
-      // Logging
-      log_file: './logs/combined.log',
-      out_file: './logs/out.log',
-      error_file: './logs/error.log',
+      // Logging with proper paths
+      log_file: '/app/logs/combined.log',
+      out_file: '/app/logs/out.log',
+      error_file: '/app/logs/error.log',
       log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
       // Graceful shutdown
       kill_timeout: 5000,

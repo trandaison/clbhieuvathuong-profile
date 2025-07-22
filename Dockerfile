@@ -1,4 +1,5 @@
 # Stage 1: Build the application
+# Use Node.js v20.18.0 to match local development
 FROM node:20.18.0-alpine AS builder
 
 # Set working directory
@@ -17,6 +18,7 @@ COPY . .
 RUN npm run build
 
 # Stage 2: Production image
+# Use Node.js v20.18.0 to match local development
 FROM node:20.18.0-alpine AS runner
 
 # Install PM2 globally
@@ -36,6 +38,9 @@ COPY --from=builder /app/.next/static ./.next/static
 
 # Copy PM2 ecosystem file
 COPY ecosystem.config.js ./
+
+# Create logs directory with proper permissions
+RUN mkdir -p /app/logs && chown -R nextjs:nodejs /app/logs
 
 # Change ownership to nextjs user
 RUN chown -R nextjs:nodejs /app

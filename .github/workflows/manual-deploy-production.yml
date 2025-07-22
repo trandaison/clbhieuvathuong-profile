@@ -17,7 +17,7 @@ jobs:
   deploy:
     name: Deploy to Production Server
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: 🚀 Deploy to Production Server
         uses: appleboy/ssh-action@v1.0.3
@@ -28,15 +28,15 @@ jobs:
           port: 22
           script: |
             set -e
-            
+
             echo "🔧 Starting manual deployment process..."
             echo "📋 Deployment type: ${{ github.event.inputs.deployment_type }}"
-            
+
             # Step 2: Create directory structure if not exists
             echo "📂 Creating directory structure if needed..."
             mkdir -p /root/rails_apps
             cd /root/rails_apps
-            
+
             # Step 3: Clone code or pull if exists
             if [ "${{ github.event.inputs.deployment_type }}" != "restart_only" ]; then
               if [ ! -d "clbhieuvathuong-profile" ]; then
@@ -58,36 +58,70 @@ jobs:
                 exit 1
               fi
             fi
-            
+
             # Navigate to project directory
             echo "📂 Navigating to project directory..."
             cd clbhieuvathuong-profile
-            
+
+            # Check Docker versions (Docker 19.03.4 detected)
+            echo "🔍 Checking Docker versions..."
+            docker --version
+            docker-compose --version
+
+            # Set environment variables for Docker 19.03.4 compatibility
+            export DOCKER_BUILDKIT=0
+            export COMPOSE_DOCKER_CLI_BUILD=0
+            export DOCKER_CLI_EXPERIMENTAL=disabled
+            echo "✅ Set Docker environment for legacy compatibility (BUILDKIT=0)"
+
+            # Use docker-compose for Docker 19.03.4 compatibility
+            DOCKER_COMPOSE="docker-compose"
+            echo "✅ Using 'docker-compose' for Docker 19.03.4 compatibility"
+
+            # Validate docker-compose.yml
+            echo "🔍 Validating docker-compose.yml..."
+            $DOCKER_COMPOSE config || {
+              echo "❌ docker-compose.yml validation failed"
+              echo "📋 File content:"
+              head -10 docker-compose.yml
+              exit 1
+            }
+
             # Step 4: Deploy application on port 3030
             echo "🐳 Deploying application on port 3030..."
-            
+
+            # Clean up Docker for compatibility issues
+            echo "🧹 Cleaning up Docker cache and images for compatibility..."
+            docker system prune -af || true
+            # Remove any existing images that might have OCI format
+            docker rmi $(docker images -q) 2>/dev/null || true
+
             # Stop existing containers
             echo "🛑 Stopping existing containers..."
-            docker-compose down || true
-            
+            $DOCKER_COMPOSE down || true
+
             if [ "${{ github.event.inputs.deployment_type }}" != "restart_only" ]; then
+              # Pull base images with legacy format first
+              echo "📥 Pre-pulling base images with legacy format..."
+              docker pull node:20.18.0-alpine || echo "Warning: Could not pre-pull base image"
+
               if [ "${{ github.event.inputs.deployment_type }}" == "force_rebuild" ]; then
-                echo "🏗️ Force rebuilding Docker image (no cache)..."
-                docker-compose build --no-cache
+                echo "🏗️ Force rebuilding Docker image (no cache) with legacy format..."
+                DOCKER_BUILDKIT=0 COMPOSE_DOCKER_CLI_BUILD=0 DOCKER_CLI_EXPERIMENTAL=disabled $DOCKER_COMPOSE build --no-cache --force-rm
               else
-                echo "🏗️ Building Docker image..."
-                docker-compose build
+                echo "🏗️ Building Docker image with legacy format..."
+                DOCKER_BUILDKIT=0 COMPOSE_DOCKER_CLI_BUILD=0 DOCKER_CLI_EXPERIMENTAL=disabled $DOCKER_COMPOSE build --force-rm
               fi
             fi
-            
+
             # Start containers
             echo "🚀 Starting containers on port 3030..."
-            docker-compose up -d
-            
+            $DOCKER_COMPOSE up -d
+
             # Wait for application to be ready
             echo "⏳ Waiting for application to be ready..."
             sleep 30
-            
+
             # Health check with retries
             echo "🔍 Performing health check..."
             for i in {1..10}; do
@@ -100,23 +134,23 @@ jobs:
                 echo "⏳ Health check attempt $i/10 failed, retrying in 10s..."
                 sleep 10
               fi
-              
+
               if [ $i -eq 10 ]; then
                 echo "❌ Application failed to start properly after 10 attempts"
                 echo "📋 Checking Docker logs..."
-                docker-compose logs --tail=50
+                $DOCKER_COMPOSE logs --tail=50
                 echo "📊 Container status:"
-                docker-compose ps
+                $DOCKER_COMPOSE ps
                 exit 1
               fi
             done
-            
+
             # Step 5: Show final status and exit
             echo "🎉 Deployment completed successfully!"
             echo "📊 Final Container Status:"
-            docker-compose ps
+            $DOCKER_COMPOSE ps
             echo ""
             echo "📋 Recent Application Logs:"
-            docker-compose logs --tail=20
+            $DOCKER_COMPOSE logs --tail=20
             echo ""
             echo "✅ Done! Application is ready to serve traffic."
