@@ -41,6 +41,7 @@ export async function fetchPublicProfileAction(
 
     const profile: PublicProfileResponse = await response.json();
     const isPartial = response.status === 206;
+    console.log('Profile fetched:', profile, 'isPartial:', isPartial);
 
     return { profile, isPartial };
   } catch (error) {

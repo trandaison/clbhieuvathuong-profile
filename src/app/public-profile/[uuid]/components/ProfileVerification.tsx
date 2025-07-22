@@ -67,15 +67,6 @@ export default function ProfileVerification({ profile, uuid, onVerificationSucce
     setIsLoading(true);
     setVerificationError('');
 
-    // Validate required fields
-    if (!verificationForm.fullName || !verificationForm.gender ||
-        !verificationForm.dateOfBirth || !verificationForm.idNumber ||
-        !verificationForm.phoneNumber) {
-      setVerificationError('Vui lòng điền đầy đủ tất cả thông tin');
-      setIsLoading(false);
-      return;
-    }
-
     // Validate reCAPTCHA
     if (!captchaToken) {
       setVerificationError('Vui lòng hoàn thành xác thực reCAPTCHA');
@@ -144,7 +135,7 @@ export default function ProfileVerification({ profile, uuid, onVerificationSucce
             {/* Full Name */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Họ và tên <span className="text-red-500">*</span>
+                Họ và tên
               </label>
               <input
                 type="text"
@@ -160,7 +151,7 @@ export default function ProfileVerification({ profile, uuid, onVerificationSucce
               {/* Gender */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Giới tính <span className="text-red-500">*</span>
+                  Giới tính
                 </label>
                 <select
                   value={verificationForm.gender}
@@ -181,7 +172,7 @@ export default function ProfileVerification({ profile, uuid, onVerificationSucce
               {/* Date of Birth */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Ngày sinh <span className="text-red-500">*</span>
+                  Ngày sinh
                 </label>
                 <input
                   type="date"
@@ -195,7 +186,7 @@ export default function ProfileVerification({ profile, uuid, onVerificationSucce
             {/* ID Number */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                CCCD/CMND <span className="text-red-500">*</span>
+                CCCD/CMND
               </label>
               <input
                 type="text"
@@ -209,7 +200,7 @@ export default function ProfileVerification({ profile, uuid, onVerificationSucce
             {/* Phone Number */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Số điện thoại <span className="text-red-500">*</span>
+                Số điện thoại
               </label>
               <input
                 type="tel"
