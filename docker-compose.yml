@@ -12,9 +12,6 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3000
-    # Mount logs directory for persistence
-    volumes:
-      - ./logs:/app/logs
     # Add health check
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
