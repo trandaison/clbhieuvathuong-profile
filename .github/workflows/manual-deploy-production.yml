@@ -1,0 +1,122 @@
+name: Manual Deploy to Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      deployment_type:
+        description: 'Deployment Type'
+        required: true
+        default: 'full_deploy'
+        type: choice
+        options:
+          - full_deploy
+          - restart_only
+          - force_rebuild
+
+jobs:
+  deploy:
+    name: Deploy to Production Server
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 🚀 Deploy to Production Server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: 45.77.38.146
+          username: root
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            set -e
+            
+            echo "🔧 Starting manual deployment process..."
+            echo "📋 Deployment type: ${{ github.event.inputs.deployment_type }}"
+            
+            # Step 2: Create directory structure if not exists
+            echo "📂 Creating directory structure if needed..."
+            mkdir -p /root/rails_apps
+            cd /root/rails_apps
+            
+            # Step 3: Clone code or pull if exists
+            if [ "${{ github.event.inputs.deployment_type }}" != "restart_only" ]; then
+              if [ ! -d "clbhieuvathuong-profile" ]; then
+                echo "📥 Cloning repository for the first time..."
+                git clone https://github.com/${{ github.repository }}.git clbhieuvathuong-profile
+              else
+                echo "🔄 Pulling latest changes..."
+                cd clbhieuvathuong-profile
+                git fetch origin
+                git reset --hard origin/main || git reset --hard origin/master
+                cd ..
+              fi
+            else
+              echo "⚡ Skipping code update (restart only mode)..."
+              # Check if directory exists for restart_only mode
+              if [ ! -d "clbhieuvathuong-profile" ]; then
+                echo "❌ Error: Application directory does not exist. Cannot restart without code!"
+                echo "💡 Please run with 'full_deploy' mode first to clone the repository."
+                exit 1
+              fi
+            fi
+            
+            # Navigate to project directory
+            echo "📂 Navigating to project directory..."
+            cd clbhieuvathuong-profile
+            
+            # Step 4: Deploy application on port 3030
+            echo "🐳 Deploying application on port 3030..."
+            
+            # Stop existing containers
+            echo "🛑 Stopping existing containers..."
+            docker-compose down || true
+            
+            if [ "${{ github.event.inputs.deployment_type }}" != "restart_only" ]; then
+              if [ "${{ github.event.inputs.deployment_type }}" == "force_rebuild" ]; then
+                echo "🏗️ Force rebuilding Docker image (no cache)..."
+                docker-compose build --no-cache
+              else
+                echo "🏗️ Building Docker image..."
+                docker-compose build
+              fi
+            fi
+            
+            # Start containers
+            echo "🚀 Starting containers on port 3030..."
+            docker-compose up -d
+            
+            # Wait for application to be ready
+            echo "⏳ Waiting for application to be ready..."
+            sleep 30
+            
+            # Health check with retries
+            echo "🔍 Performing health check..."
+            for i in {1..10}; do
+              if curl -f http://localhost:3030/api/health >/dev/null 2>&1; then
+                echo "✅ Application is running successfully on port 3030!"
+                echo "🌐 Application accessible at: http://45.77.38.146:3030"
+                echo "🔍 Health check: http://45.77.38.146:3030/api/health"
+                break
+              else
+                echo "⏳ Health check attempt $i/10 failed, retrying in 10s..."
+                sleep 10
+              fi
+              
+              if [ $i -eq 10 ]; then
+                echo "❌ Application failed to start properly after 10 attempts"
+                echo "📋 Checking Docker logs..."
+                docker-compose logs --tail=50
+                echo "📊 Container status:"
+                docker-compose ps
+                exit 1
+              fi
+            done
+            
+            # Step 5: Show final status and exit
+            echo "🎉 Deployment completed successfully!"
+            echo "📊 Final Container Status:"
+            docker-compose ps
+            echo ""
+            echo "📋 Recent Application Logs:"
+            docker-compose logs --tail=20
+            echo ""
+            echo "✅ Done! Application is ready to serve traffic."

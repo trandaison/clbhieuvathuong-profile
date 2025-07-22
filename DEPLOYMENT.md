@@ -30,8 +30,8 @@ This guide explains how to deploy the CLB Hiến Máu Profile application using 
    ```
 
 4. **Access the application**
-   - Application: http://localhost:5000
-   - Health check: http://localhost:5000/api/health
+   - Application: http://localhost:3030
+   - Health check: http://localhost:3030/api/health
 
 ## Available Scripts
 
@@ -122,7 +122,7 @@ server {
     server_name yourdomain.com;
 
     location / {
-        proxy_pass http://localhost:5000;
+        proxy_pass http://localhost:3030;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
@@ -158,7 +158,7 @@ pm2 flush  # Clear logs
 ```
 
 ### Application Issues
-1. Check health endpoint: `curl http://localhost:5000/api/health`
+1. Check health endpoint: `curl http://localhost:3030/api/health`
 2. Verify environment variables are set correctly
 3. Check application logs in `./logs` directory
 
