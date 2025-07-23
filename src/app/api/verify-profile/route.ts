@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: new URLSearchParams({
-        secret: process.env.RECAPTCHA_SECRET_KEY || '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe',
+        secret: String(process.env.RECAPTCHA_SECRET_KEY),
         response: captchaToken,
       }),
     });

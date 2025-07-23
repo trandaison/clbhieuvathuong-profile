@@ -12,6 +12,8 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3000
+    env_file:
+      - .env.production
     # Add health check
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
@@ -25,4 +27,4 @@ services:
 
 networks:
   app-network:
-    driver: bridge
+    external: true

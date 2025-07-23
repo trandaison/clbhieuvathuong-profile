@@ -3,7 +3,7 @@
 import { PublicProfileResponse, ProfileData, VerificationRequest } from '@/types/api';
 import { convertApiToProfileData } from '@/utils/profile';
 
-const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:8000';
+const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:3000';
 
 export async function fetchPublicProfileAction(
   uuid: string,

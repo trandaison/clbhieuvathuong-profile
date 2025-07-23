@@ -8,10 +8,6 @@ yarn-error.log*
 .next/
 out/
 
-# Environment variables
-.env*
-!.env.example
-
 # Production builds
 build/
 dist/
