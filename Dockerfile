@@ -29,36 +29,20 @@ RUN npm run build
 # Use Node.js v20.18.0 to match local development
 FROM node:20.18.0-alpine AS runner
 
-# Install PM2 globally
-RUN npm install -g pm2
-
-# Set working directory
 WORKDIR /app
 
-# Create a non-root user
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
 
-# Copy built application from builder stage
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 
-# Copy PM2 ecosystem file
-COPY ecosystem.config.js ./
+# create user
+RUN addgroup -S nextjs && adduser -S nextjs -G nextjs
 
-# Change ownership to nextjs user
-RUN chown -R nextjs:nodejs /app
 USER nextjs
 
-# Expose port
 EXPOSE 3000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:3000/api/health || exit 1
-
-USER node
-
-# Start PM2 with ecosystem file
-CMD ["pm2-runtime", "start", "ecosystem.config.js"]
+CMD ["node", "server.js"]
